@@ -37,10 +37,10 @@ class Player(AbstractPlayer):
             if 0 <= i < len(self.board) and 0 <= j < len(self.board[0]) and (self.board[i][j] not in [-1, 1, 2]):
                 player2 = True
 
-        return player1 or player2
+        return not(player1) or not(player2)
 
-    def succ(self):
-        pos = np.where(self.board == 1)
+    def succ(self, player_number):
+        pos = np.where(self.board == player_number)
         # convert pos to tuple of ints
         all_moves = []
         pos_tuple = tuple(ax[0] for ax in pos)
@@ -54,26 +54,30 @@ class Player(AbstractPlayer):
         return all_moves
 
     def perform_move(self, move, player_number, to_add, players_list_score):
+        pos = np.where(self.board == player_number)
+        pos_tuple = tuple(ax[0] for ax in pos)
         if to_add:
-            self.board[self.pos] = -1
-            i = self.pos[0] + move[0]
-            j = self.pos[1] + move[1]
-            self.pos = (i, j)
-            val = self.board[self.pos]
+            self.board[pos_tuple] = -1
+            i = pos_tuple[0] + move[0]
+            j = pos_tuple[1] + move[1]
+            if player_number == 1:
+                self.pos = (i, j)
+            val = self.board[i][j]
             if val > 2:
-                players_list_score[player_number - 1].append(self.board[self.pos])
+                players_list_score[player_number - 1].append(self.board[i][j])
                 # players_score[player_number - 1] += self.board[self.pos]
-            self.board[self.pos] = player_number
+            self.board[i][j] = player_number
         else:
-            self.board[self.pos] = 0
-            i = self.pos[0] - move[0]
-            j = self.pos[1] - move[1]
-            self.pos = (i, j)
-            val = self.board[self.pos]
+            self.board[pos_tuple] = 0
+            i = pos_tuple[0] - move[0]
+            j = pos_tuple[1] - move[1]
+            if player_number == 1:
+                self.pos = (i, j)
+            val = self.board[i][j]
             if (val > 2):
                 players_list_score[player_number - 1].pop()
                 # players_score[player_number - 1] -= self.board[self.pos]
-            self.board[self.pos] = player_number
+            self.board[i][j] = player_number
 
     def __init__(self, game_time, penalty_score):
         AbstractPlayer.__init__(self, game_time,
@@ -109,6 +113,11 @@ class Player(AbstractPlayer):
         end = start
         limit = 1
         num_player = 1
+        lst1 = []
+        lst2 = []
+        lst1.append(players_score[0])
+        lst2.append(players_score[1])
+        players_score_list = [lst1, lst2]
         while end - start < time_limit:
             lst1 = []
             lst2 = []
@@ -118,14 +127,15 @@ class Player(AbstractPlayer):
             # TODO: interrumpted in minimax??, last iteration
             ret = self.minimax.search((num_player, players_score_list), limit, True)
             limit += 1
-            end = time.time()
+            #end = time.time()
+            end+=20
 
         i = self.pos[0] + ret[1][0]
         j = self.pos[1] + ret[1][1]
         if (self.board[i][j] > 2):
             players_score[num_player - 1] += self.board[i][j]
 
-        self.perform_move(ret[1], num_player, True)
+        self.perform_move(ret[1], num_player, True,players_score_list)
         return ret[1]
 
     def set_rival_move(self, pos):
@@ -134,13 +144,12 @@ class Player(AbstractPlayer):
             - pos: tuple, the new position of the rival.
         No output is expected
         """
-        rival_number = 2
-        rival_old_pos = np.where(self.board == rival_number)
+        rival_old_pos = np.where(self.board == 2)
         self.board[rival_old_pos] = -1
         # val=self.board[pos]
         # if (val > 2):
         #     self.player_score[rival_number-1]+=val
-        self.board[pos] = rival_number
+        self.board[pos] =2
 
 
     def update_fruits(self, fruits_on_board_dict):
@@ -152,7 +161,7 @@ class Player(AbstractPlayer):
         No output is expected.
         """
         if self.counter == 0:
-            for i in len(self.board):
-                for j in len(self.board[0]):
+            for i in range(0,len(self.board)):
+                for j in range(0, len(self.board[0])):
                     if self.board[i][j] > 2:
                         self.board[i][j] = 0

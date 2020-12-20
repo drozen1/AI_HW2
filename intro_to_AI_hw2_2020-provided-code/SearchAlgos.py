@@ -39,23 +39,23 @@ class MiniMax(SearchAlgos):
             return (self.utility(), None)
         if maximizing_player == True:
             cur_max = float('-inf')
-            for move in self.succ(state[0]):
-                self.perform_move(move, state[0],True,state[1])
-                val= self.search(state[0],depth-1,False)
-                if val>cur_max:
-                    cur_max=val
+            for move in self.succ(1):
+                self.perform_move(move, 1,True,state[1])
+                val= self.search(state,depth-1,False)
+                if val[0]>cur_max:
+                    cur_max=val[0]
                     best_move=move
-                self.perform_move(move, state[0], False,state[1])
+                self.perform_move(move, 1, False,state[1])
             return (cur_max, best_move)
         if maximizing_player == False:
             cur_min = float('inf')
-            for move in self.succ(3-state[0]):
-                self.perform_move(move, 3-state[0],True,state[1])
-                val= self.search(state[0],depth-1,True)
-                if val<cur_min:
-                    cur_min=val
+            for move in self.succ(2):
+                self.perform_move(move, 2,True,state[1])
+                val= self.search(state,depth-1,True)
+                if val[0]<cur_min:
+                    cur_min=val[0]
                     best_move=move
-                self.perform_move(move, 3-state[0], False,state[1])
+                self.perform_move(move, 2, False, state[1])
             return (cur_min, best_move)
 
 
