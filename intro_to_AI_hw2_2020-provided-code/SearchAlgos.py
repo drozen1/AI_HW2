@@ -2,6 +2,8 @@
 """
 from utils import ALPHA_VALUE_INIT, BETA_VALUE_INIT
 #TODO: you can import more modules, if needed
+import numpy as np
+import utils
 
 
 class SearchAlgos:
@@ -17,22 +19,44 @@ class SearchAlgos:
         self.utility = utility
         self.succ = succ
         self.perform_move = perform_move
+        self.goal = goal
 
     def search(self, state, depth, maximizing_player):
         pass
+
 
 
 class MiniMax(SearchAlgos):
 
     def search(self, state, depth, maximizing_player):
         """Start the MiniMax algorithm.
-        :param state: The state to start from.
+        :param state: The state to start from. # = (num player of maximum,players_score)
         :param depth: The maximum allowed depth for the algorithm.
         :param maximizing_player: Whether this is a max node (True) or a min node (False).
         :return: A tuple: (The min max algorithm value, The direction in case of max node or None in min mode)
         """
-        #TODO: erase the following line and implement this function.
-        raise NotImplementedError
+        if self.goal() or depth==0:
+            return (self.utility(), None)
+        if maximizing_player == True:
+            cur_max = float('-inf')
+            for move in self.succ(state[0]):
+                self.perform_move(move, state[0],True,state[1])
+                val= self.search(state[0],depth-1,False)
+                if val>cur_max:
+                    cur_max=val
+                    best_move=move
+                self.perform_move(move, state[0], False,state[1])
+            return (cur_max, best_move)
+        if maximizing_player == False:
+            cur_min = float('inf')
+            for move in self.succ(3-state[0]):
+                self.perform_move(move, 3-state[0],True,state[1])
+                val= self.search(state[0],depth-1,True)
+                if val<cur_min:
+                    cur_min=val
+                    best_move=move
+                self.perform_move(move, 3-state[0], False,state[1])
+            return (cur_min, best_move)
 
 
 class AlphaBeta(SearchAlgos):
