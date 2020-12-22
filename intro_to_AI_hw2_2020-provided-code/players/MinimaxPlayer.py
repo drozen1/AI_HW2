@@ -6,10 +6,55 @@ import time
 from SearchAlgos import MiniMax
 import random
 import numpy as np
+from copy import deepcopy
 
 class Player(AbstractPlayer):
 
+    #board= copy of the real board
+    # pos= the current position
+    #number_of_wanted_player= as it sounds..
+    def number_of_reachable_white_spaces(self, board, pos, number_of_wanted_player):
+        if(board[pos] == -1 or board[pos] == 3-number_of_wanted_player):
+            return 0
+        else:
+            ret = 0
+            for d in self.directions:
+                i = pos[0] + d[0]
+                j = pos[1] + d[1]
+                if (0 <= i < len(self.board) and 0 <= j < len(self.board[0])) and (board[i][j] not in [-1, 1, 2]):  # then move is legal
+                    board[pos] = -1
+                    pos = (i, j)
+                    board[pos]=number_of_wanted_player
+                    ret += self.number_of_reachable_white_spaces(board, pos, number_of_wanted_player)
+            return ret+1
+
+    def blocks(self):
+        copy_board = deepcopy(self.board)
+        copy_pos = deepcopy(self.pos)
+        number_of_my_reachable_moves=self.number_of_reachable_white_spaces(copy_board, copy_pos,1)
+        copy_board = deepcopy(self.board)
+        pos2 = np.where(self.board == 2)
+        # convert pos to tuple of ints
+        pos2_tuple = tuple(ax[0] for ax in pos2)
+        copy_pos = deepcopy(pos2_tuple)
+        number_of_rival_reachable_moves = self.number_of_reachable_white_spaces(copy_board, copy_pos, 2)
+        if number_of_my_reachable_moves>number_of_rival_reachable_moves:
+            return 0.75
+        else:
+            return 0
+
+    def current_spaces(self):
+        copy_board = deepcopy(self.board)
+        copy_pos = deepcopy(self.pos)
+        copy_board[copy_pos]=-1
+        for d in self.directions:
+            i = copy_pos[0] + d[0]
+            j = copy_pos[1] + d[1]
+            new_pos = (i, j)
+        #TODO: finish
+
     def heuristic(self):
+        blocks=self.blocks()
         return self.counter
 
     def is_goal_state(self):
